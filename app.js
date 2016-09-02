@@ -15,7 +15,7 @@ function waitMsg() {
 		WaitTimeSeconds : 20
 	};
 
-	sqs.reciveMessage(params, function (err, data) {
+	sqs.receiveMessage(params, function (err, data) {
 		if (err) {
 			console.log("Error: " + err);
 		} else {
