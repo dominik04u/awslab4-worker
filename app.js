@@ -20,7 +20,7 @@ function waitMsg() {
 			console.log("Error: " + err);
 		} else {
 			var msg = data.Messages || [];
-			if (msq.length > 0) {
+			if (msg.length > 0) {
 				var delParams = {
 					QueueUrl : 'https://sqs.us-west-2.amazonaws.com/983680736795/AdamskiSQS',
 					ReceiptHandle : JSON.parse(JSON.stringify(messages))[0]["ReceiptHandle"]
