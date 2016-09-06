@@ -1,13 +1,15 @@
 var AWS = require("aws-sdk");
-AWS.config.loadFromPath('./config.json');
-var sqs = new AWS.SQS();
 var resizer = require('./actions/rotate');
+AWS.config.loadFromPath('./config.json');
 var InfiniteLoop = require('infinite-loop');
 var infLoop = new InfiniteLoop;
+var sqs = new AWS.SQS();
+var async = require('async');
 
-infLoop.add(waitMsg, null).setInterval(100).run();
+//infLoop.add(waitMsg,null).setInterval(100).run();
 
-function waitMsg() {
+
+var waitMsg=function() {
 	var params = {
 		QueueUrl : 'https://sqs.us-west-2.amazonaws.com/983680736795/AdamskiSQS',
 		MaxNumberOfMessages : 1,
@@ -23,11 +25,11 @@ function waitMsg() {
 			if (msg.length > 0) {
 				var delParams = {
 					QueueUrl : 'https://sqs.us-west-2.amazonaws.com/983680736795/AdamskiSQS',
-					ReceiptHandle : JSON.parse(JSON.stringify(messages))[0]["ReceiptHandle"]
+					ReceiptHandle : JSON.parse(JSON.stringify(msg))[0]["ReceiptHandle"]
 				};
 				sqs.deleteMessage(delParams, function (err, data) {
 					if (err) {
-						console.log("Error: " + err);
+						console.log(err, err.stack);
 					} else {
 						resizer.doResize(msg);
 					}
@@ -35,4 +37,7 @@ function waitMsg() {
 			}
 		}
 	});
+	setTimeout(waitMsg, 10000);
 }
+
+waitMsg();

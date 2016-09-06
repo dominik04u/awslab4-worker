@@ -5,31 +5,33 @@ var s3 = new AWS.S3();
 var lwip = require('lwip');
 var bucketName = "adamski-lab4";
 
-var task = function (msg) {
+function doResize(msg) {
+
+	var msgBody = JSON.parse(JSON.stringify(msg))[0]["Body"];
+	var file = JSON.parse(msgBody).file;
+	var resizeValueX = JSON.parse(msgBody).resizeValueX;
+	var resizeValueY = JSON.parse(msgBody).resizeValueY;
+
 	var params = {
 		Bucket : bucketName,
 		Key : file
 	};
 
-	var msgBody = JSON.parse(JSON.strigify(msg))[0]["Body"];
-	var file = JSON.parse(msgBody).file;
-	var scaleValue = JSON.parse(msgBody).scaleValue;
-
 	s3.getObject(params, function (err, data) {
 		if (err) {
-			console.loge("Error: " + err);
+			console.log("Error: " + err);
 		} else {
-			lwip.open(data.Body, 'jpg', function (err, img) {
+			lwip.open(data.Body, 'jpg', function (err, image) {
 				if (err) {
-					console.loge("Error: " + err);
+					console.log("Error: " + err);
 				} else {
-					img.scale(scaleValue, function (err, img) {
+					image.resize(resizeValueX, resizeValueY, function (err, image) {
 						if (err) {
-							console.loge("Error: " + err);
+							console.log("Error: " + err);
 						} else {
 							image.toBuffer('jpg', function (err, buffer) {
 								if (err) {
-									console.loge("Error: " + err);
+									console.log("Error: " + err);
 								} else {
 									var nextParams = {
 										Bucket : params.Bucket,
@@ -42,7 +44,10 @@ var task = function (msg) {
 										if (err) {
 											console.log("Error: " + err);
 										} else {
-											console.log("Obraz zosta³ przeskalowany");
+											var time = require('time');
+											var now = new time.Date();
+											now.setTimezone('Europe/Warsaw');
+											console.log("Plik " + file + " zostal przeskalowany " + now.toString() + " \nNowe wymiary X: " + resizeValueX + " Y: " + resizeValueY);
 										}
 									});
 								}
@@ -54,4 +59,4 @@ var task = function (msg) {
 		}
 	});
 }
-exports.action = task;
+exports.doResize = doResize;
